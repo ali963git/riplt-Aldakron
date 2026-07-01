@@ -3428,7 +3428,7 @@ ${currentHadeeth.benefit}
                                 src={`https://quran.ksu.edu.sa/png_big/${quranPage}.png`}
                                 alt={`صفحة القرآن الكريم رقم ${quranPage}`}
                                 referrerPolicy="no-referrer"
-                                loading="lazy"
+                                loading="eager"
                                 className={`max-h-[420px] md:max-h-[580px] w-auto object-contain transition-all duration-300 rounded-lg select-none ${
                                   quranColorFilter === 'sepia'
                                     ? 'sepia brightness-90 contrast-110 saturate-[80%]'
@@ -3438,7 +3438,6 @@ ${currentHadeeth.benefit}
                                     ? 'invert hue-rotate-180 brightness-90 contrast-115 text-zinc-300'
                                     : ''
                                 }`}
-                                loading="eager"
                               />
 
                             </div>
