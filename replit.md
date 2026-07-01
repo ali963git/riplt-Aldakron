@@ -1,44 +1,62 @@
-# [Project name]
+# الذاكرون — The Rememberers
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A comprehensive Islamic platform ported from Firebase to this pnpm monorepo. Features full Quran reader (604 pages + audio), daily Azkar counter, digital Tasbih, Qibla compass, Zakat calculator, AI Contemplation assistant (Gemini), Hadith of the day, Sunnah duas, Hisn al-Muslim, prayer times, and Islamic events calendar.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- `pnpm --filter @workspace/api-server run dev` — run the API server (port 8080)
+- `pnpm --filter @workspace/azkar-app run dev` — run the frontend (port 24812)
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- Required env: `GEMINI_API_KEY` — Google Gemini API key for the AI Reflection feature
 
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
-- API: Express 5
-- DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
-- API codegen: Orval (from OpenAPI spec)
-- Build: esbuild (CJS bundle)
+- Frontend: React 18 + Vite + Tailwind CSS v4, framer-motion, recharts, i18next (Arabic/English)
+- API: Express 5 + @google/genai
+- DB: PostgreSQL + Drizzle ORM (not yet used by app features)
+- Build: esbuild (CJS bundle for API)
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/azkar-app/src/App.tsx` — entire frontend app (single large component ~6000 lines)
+- `artifacts/azkar-app/src/data/` — all Islamic data (azkar, duas, hisn, surahs, events, hadeeths)
+- `artifacts/azkar-app/src/AuthProvider.tsx` — stub auth context (no Firebase)
+- `artifacts/api-server/src/routes/gemini.ts` — Gemini stream SSE endpoint
+- `artifacts/api-server/src/routes/quran.ts` — Quran reciters proxy + audio CORS proxy
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- Firebase completely removed; all sync replaced with localStorage. Auth is a stub.
+- Quran audio proxied through `/api/quran/audio?url=...` to avoid CORS issues with CDN servers.
+- Reciters list auto-updated at runtime from `mp3quran.net/api/v3/reciters`.
+- Gemini AI calls go through `/api/gemini/stream` SSE route (uses `GEMINI_API_KEY` server-side).
+- Push notifications replaced with no-op stubs (web push requires a separate backend infrastructure).
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+Full-featured Islamic web app in Arabic with English support:
+- 📖 Quran reader (604 Mus'haf pages) + 16 reciters audio player
+- 📿 Daily Azkar categories + Hisn al-Muslim
+- 🔢 Digital Tasbih with dhikr history charts
+- 🧭 Qibla compass + real-time prayer times by geolocation
+- 🤲 Sunnah duas + Hadith of the day
+- 🕌 Islamic events calendar
+- 🤖 AI Contemplation assistant (requires GEMINI_API_KEY)
+- 💰 Zakat calculator
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- The app is in Arabic RTL with an English toggle.
+- Dark emerald theme (`#02130F` bg, `#D4AF37` gold accents).
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- App.tsx is a large monolith (~6000 lines). Firebase has been fully removed; all state is localStorage.
+- `subscribeToWebPush` and `unsubscribeFromWebPush` are no-ops — push notifications not implemented.
+- The `useAuth` hook returns `user: null` always (no login system).
+- API server must be running for Gemini AI and Quran audio features to work.
 
 ## Pointers
 
