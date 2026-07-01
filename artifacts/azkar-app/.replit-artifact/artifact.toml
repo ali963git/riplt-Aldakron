@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "الذاكرون"
+version = "1.0.0"
+id = "artifacts/azkar-app"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 24812
+
+[services.development]
+run = "pnpm --filter @workspace/azkar-app run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/azkar-app", "run", "build" ]
+publicDir = "artifacts/azkar-app/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "24812"
+BASE_PATH = "/"
