@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Aref+Ruqaa:wght@400;700&family=Cairo:wght@300;400;700&display=swap');
 @import "tailwindcss";
 
 @theme {
@@ -5,7 +6,31 @@
   --font-amiri: "Amiri", "serif";
 }
 
-/* Custom scrollbars and glowing animations to reinforce the premium emerald theme */
+@layer base {
+  :root {
+    --color-emerald: #02130F;
+    --color-mid-green: #0A2818;
+    --color-gold: #D4AF37;
+    --color-off-white: #FAF6EE;
+    --font-display: 'Aref Ruqaa', serif;
+    --font-body: 'Cairo', sans-serif;
+    --font-quran: 'Amiri Quran', serif;
+  }
+}
+
+body {
+  background-color: var(--color-emerald);
+  color: var(--color-off-white);
+  font-family: var(--font-body);
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+.text-gold { color: var(--color-gold); }
+.bg-gold { background-color: var(--color-gold); }
+.border-gold { border-color: var(--color-gold); }
+
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -19,12 +44,8 @@
 }
 
 @keyframes spin-slow {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 .animate-spin-slow {

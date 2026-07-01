@@ -1,0 +1,31 @@
+kind = "video"
+previewPath = "/azkar-video/"
+title = "الذاكرون — فيديو تعريفي"
+version = "1.0.0"
+id = "artifacts/azkar-video"
+router = "path"
+
+[[integratedSkills]]
+name = "video-js"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/azkar-video/" ]
+localPort = 19911
+
+[services.development]
+run = "pnpm --filter @workspace/azkar-video run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/azkar-video", "run", "build" ]
+publicDir = "artifacts/azkar-video/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19911"
+BASE_PATH = "/azkar-video/"
