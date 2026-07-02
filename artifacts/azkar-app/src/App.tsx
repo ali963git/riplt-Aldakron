@@ -2134,14 +2134,6 @@ ${dua.reference}
               >
                 الذَّاكِرُون
               </motion.h1>
-              <motion.p
-                className="az-tag text-[10px] text-teal-400 font-bold tracking-wider mt-1"
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, ease: 'easeOut', delay: 0.55 }}
-              >
-                صدقة جارية ونشر مبارك
-              </motion.p>
             </div>
           </motion.div>
 
