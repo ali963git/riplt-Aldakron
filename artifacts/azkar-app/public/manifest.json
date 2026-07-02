@@ -1,0 +1,47 @@
+{
+  "name": "الذاكرون — منصة إسلامية شاملة",
+  "short_name": "الذاكرون",
+  "description": "قرآن كريم كامل، أذكار يومية، تسبيح ذكي، مواقيت الصلاة، حصن المسلم، ومساعد ذكاء اصطناعي للتأمل.",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#02130F",
+  "theme_color": "#02130F",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/images/app_logo.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/images/app_logo.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["education", "lifestyle", "utilities"],
+  "shortcuts": [
+    {
+      "name": "القرآن الكريم",
+      "short_name": "القرآن",
+      "url": "/?tab=quran",
+      "description": "تصفح المصحف الشريف"
+    },
+    {
+      "name": "الأذكار اليومية",
+      "short_name": "الأذكار",
+      "url": "/?tab=azkar",
+      "description": "أذكار الصباح والمساء"
+    },
+    {
+      "name": "التسبيح",
+      "short_name": "التسبيح",
+      "url": "/?tab=tasbih",
+      "description": "عداد التسبيح الذكي"
+    }
+  ]
+}
