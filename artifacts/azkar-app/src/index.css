@@ -73,6 +73,46 @@
   font-family: var(--font-display);
 }
 
+/* ── Logo title shimmer animation ── */
+@keyframes az-shimmer {
+  0%   { background-position: -300% center; }
+  100% { background-position:  300% center; }
+}
+@keyframes az-glow-pulse {
+  0%, 100% { filter: drop-shadow(0 0 6px #D4AF3766); }
+  50%       { filter: drop-shadow(0 0 18px #D4AF37CC) drop-shadow(0 0 32px #D4AF3755); }
+}
+@keyframes az-tag-blink {
+  0%, 100% { opacity: 0.85; }
+  50%       { opacity: 1; }
+}
+
+.az-title {
+  background: linear-gradient(
+    90deg,
+    #FAF6EE 0%,
+    #D4AF37 25%,
+    #FFF8DC 45%,
+    #FFD700 50%,
+    #FFF8DC 55%,
+    #D4AF37 75%,
+    #FAF6EE 100%
+  );
+  background-size: 300% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: az-shimmer 4s linear infinite;
+}
+
+.az-glow {
+  animation: az-glow-pulse 2.8s ease-in-out infinite;
+}
+
+.az-tag {
+  animation: az-tag-blink 3s ease-in-out infinite;
+}
+
 /* Smooth scrollbars */
 * {
   scrollbar-width: thin;

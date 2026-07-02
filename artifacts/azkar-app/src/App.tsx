@@ -2100,22 +2100,50 @@ ${dua.reference}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-24 flex items-center justify-between">
           
           {/* Logo */}
-          <div className="flex items-center gap-3 cursor-pointer select-none" onClick={() => { setActiveTab('home'); setMobileMenuOpen(false); }}>
-            <div className="w-14 h-14 rounded-full border-2 border-[#D4AF37] overflow-hidden shadow-lg shadow-[#D4AF37]/25 flex items-center justify-center bg-[#011B12]">
-              <img 
-                src="/images/logo.jpg" 
-                alt="الذاكرون" 
-                className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
+          <motion.div
+            className="flex items-center gap-3 cursor-pointer select-none"
+            onClick={() => { setActiveTab('home'); setMobileMenuOpen(false); }}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+          >
+            {/* Logo icon with glow pulse */}
+            <motion.div
+              className="az-glow w-14 h-14 rounded-full border-2 border-[#D4AF37] overflow-hidden flex items-center justify-center bg-[#011B12] shrink-0"
+              initial={{ scale: 0.5, opacity: 0, rotate: -15 }}
+              animate={{ scale: 1, opacity: 1, rotate: 0 }}
+              transition={{ duration: 0.8, ease: [0.34, 1.56, 0.64, 1], delay: 0.1 }}
+            >
+              <img
+                src="/images/logo.jpg"
+                alt="الذاكرون"
+                className="w-full h-full object-cover"
                 loading="eager"
               />
-            </div>
-            <div>
-              <h1 className="text-2xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#FAF6EE] via-[#D4AF37] to-[#FFF2B2] font-amiri leading-none">
+            </motion.div>
+
+            {/* Text block */}
+            <div className="overflow-hidden">
+              <motion.h1
+                className="az-title text-2xl font-extrabold font-amiri leading-none tracking-wide"
+                initial={{ opacity: 0, y: 16, filter: 'blur(8px)' }}
+                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.25 }}
+              >
                 الذَّاكِرُون
-              </h1>
-              <p className="text-[10px] text-teal-400 font-bold uppercase tracking-wider mt-1">صدقة جارية ونشر مبارك</p>
+              </motion.h1>
+              <motion.p
+                className="az-tag text-[10px] text-teal-400 font-bold tracking-wider mt-1"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: 'easeOut', delay: 0.55 }}
+              >
+                صدقة جارية ونشر مبارك
+              </motion.p>
             </div>
-          </div>
+          </motion.div>
 
           {/* Desktop Navigation */}
           <nav className="hidden xl:flex items-center gap-1 bg-[#011B12]/40 backdrop-blur-sm p-1.5 rounded-full border border-[#D4AF37]/10">
