@@ -2103,11 +2103,10 @@ ${dua.reference}
           <div className="flex items-center gap-3 cursor-pointer select-none" onClick={() => { setActiveTab('home'); setMobileMenuOpen(false); }}>
             <div className="w-14 h-14 rounded-full border-2 border-[#D4AF37] overflow-hidden shadow-lg shadow-[#D4AF37]/25 flex items-center justify-center bg-[#011B12]">
               <img 
-                src="/src/assets/images/app_logo_1782265261710.jpg" 
+                src="/images/logo.jpg" 
                 alt="الذاكرون" 
                 className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
-                referrerPolicy="no-referrer"
-                loading="lazy"
+                loading="eager"
               />
             </div>
             <div>
