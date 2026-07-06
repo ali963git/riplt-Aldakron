@@ -11,6 +11,19 @@ env = { "CI" = "true" }
 [workflows]
 runButton = "Project"
 
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "artifacts/api-server: API Server"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "artifacts/azkar-app: web"
+
 [agent]
 stack = "PNPM_WORKSPACE"
 expertMode = true
@@ -32,5 +45,5 @@ localPort = 19911
 externalPort = 3001
 
 [[ports]]
-localPort = 24812
+localPort = 5173
 externalPort = 3000
