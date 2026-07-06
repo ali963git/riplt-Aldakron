@@ -1,7 +1,10 @@
-const CACHE_NAME = 'azkar-v1';
-const STATIC_CACHE = 'azkar-static-v1';
-const FONT_CACHE = 'azkar-fonts-v1';
-const IMAGE_CACHE = 'azkar-images-v1';
+const CACHE_VERSION = 'v2';
+const CACHE_NAME = `azkar-${CACHE_VERSION}`;
+const STATIC_CACHE = `azkar-static-${CACHE_VERSION}`;
+const FONT_CACHE = `azkar-fonts-${CACHE_VERSION}`;
+const IMAGE_CACHE = `azkar-images-${CACHE_VERSION}`;
+
+const ALL_CACHES = [CACHE_NAME, STATIC_CACHE, FONT_CACHE, IMAGE_CACHE];
 
 const PRECACHE_URLS = [
   '/',
@@ -18,7 +21,8 @@ const QURAN_IMAGE_ORIGIN = 'https://quran.ksu.edu.sa';
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(STATIC_CACHE).then((cache) => cache.addAll(PRECACHE_URLS))
+    caches.open(STATIC_CACHE)
+      .then((cache) => cache.addAll(PRECACHE_URLS))
       .then(() => self.skipWaiting()),
   );
 });
@@ -28,7 +32,7 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((keys) =>
       Promise.all(
         keys
-          .filter((k) => k !== STATIC_CACHE && k !== FONT_CACHE && k !== IMAGE_CACHE)
+          .filter((k) => !ALL_CACHES.includes(k))
           .map((k) => caches.delete(k)),
       ),
     ).then(() => self.clients.claim()),
@@ -39,7 +43,13 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
+  // Only handle GET requests
   if (request.method !== 'GET') return;
+
+  // Audio proxy streams — NEVER cache or intercept (large Range-request streams)
+  if (url.pathname.startsWith('/api/quran/audio')) {
+    return; // let the browser handle directly — no SW interception
+  }
 
   // Quran page images — cache-first (images never change)
   if (url.origin === QURAN_IMAGE_ORIGIN) {
@@ -53,7 +63,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // API calls — network-first (fresh data preferred, fallback to cache)
+  // API calls (except audio) — network-first (fresh data preferred, fallback to cache)
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(networkFirst(request, CACHE_NAME, 4000));
     return;

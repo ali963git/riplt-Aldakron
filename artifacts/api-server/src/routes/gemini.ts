@@ -14,11 +14,11 @@ router.post("/gemini/stream", async (req, res) => {
     return;
   }
 
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
   if (!apiKey) {
     res
       .status(503)
-      .json({ error: "GEMINI_API_KEY غير متوفر. يرجى إضافة مفتاح API في إعدادات المشروع." });
+      .json({ error: "GEMINI_API_KEY / GOOGLE_API_KEY غير متوفر. يرجى إضافة مفتاح API في إعدادات المشروع." });
     return;
   }
 

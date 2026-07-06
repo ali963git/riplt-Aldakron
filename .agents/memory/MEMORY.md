@@ -1,0 +1,3 @@
+- [Port config](port-config.md) — frontend on 5173, API on 8080; platform reserves 3000 so never use it for Vite
+- [Audio proxy SSRF pattern](audio-proxy-ssrf.md) — re-validate host allowlist on every redirect hop, not just the initial URL
+- [Quran swipe RTL](quran-swipe-rtl.md) — swipe-left (dx<0) = next page (higher number), swipe-right = prev page; matches existing keyboard mapping

@@ -335,6 +335,13 @@ export default function App() {
   const [volume, setVolume] = useState<number>(0.85);
   const [isMuted, setIsMuted] = useState<boolean>(false);
   const [playbackRate, setPlaybackRate] = useState<number>(1.0);
+  const [isAudioLoading, setIsAudioLoading] = useState<boolean>(false);
+  // Touch swipe refs for Quran page navigation
+  const quranTouchStartX = useRef<number | null>(null);
+  const quranTouchStartY = useRef<number | null>(null);
+  // PWA install prompt
+  const deferredInstallPromptRef = useRef<any>(null);
+  const [canInstallPwa, setCanInstallPwa] = useState<boolean>(false);
 
   // Azkar Tab State
   const [activeAzkarCategory, setActiveAzkarCategory] = useState<'صباح' | 'مساء' | 'نوم' | 'صلاة' | 'favorites'>('صباح');
@@ -757,6 +764,22 @@ export default function App() {
         audioRef.current.pause();
         audioRef.current = null;
       }
+    };
+  }, []);
+
+  // PWA install prompt — capture beforeinstallprompt for custom install button
+  useEffect(() => {
+    const handler = (e: Event) => {
+      e.preventDefault();
+      deferredInstallPromptRef.current = e;
+      setCanInstallPwa(true);
+    };
+    const installedHandler = () => setCanInstallPwa(false);
+    window.addEventListener('beforeinstallprompt', handler);
+    window.addEventListener('appinstalled', installedHandler);
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handler);
+      window.removeEventListener('appinstalled', installedHandler);
     };
   }, []);
 
@@ -1206,14 +1229,24 @@ export default function App() {
     const handleAudioError = (e: Event) => {
       console.warn("Audio element failed to load or play source:", e);
       setIsPlaying(false);
+      setIsAudioLoading(false);
       triggerToast('تنبيه: تعذر تحميل الملف الصوتي من الخادم. يرجى التحقق من اتصالك بالإنترنت 🌐⚠️');
     };
+
+    const handleWaiting = () => setIsAudioLoading(true);
+    const handleLoadStart = () => setIsAudioLoading(true);
+    const handleCanPlay = () => setIsAudioLoading(false);
+    const handlePlaying = () => setIsAudioLoading(false);
 
     audio.addEventListener('timeupdate', handleTimeUpdate);
     audio.addEventListener('durationchange', handleDurationChange);
     audio.addEventListener('ended', handleEnded);
     audio.addEventListener('pause', handlePause);
     audio.addEventListener('error', handleAudioError);
+    audio.addEventListener('waiting', handleWaiting);
+    audio.addEventListener('loadstart', handleLoadStart);
+    audio.addEventListener('canplay', handleCanPlay);
+    audio.addEventListener('playing', handlePlaying);
 
     return () => {
       audio.removeEventListener('timeupdate', handleTimeUpdate);
@@ -1221,6 +1254,10 @@ export default function App() {
       audio.removeEventListener('ended', handleEnded);
       audio.removeEventListener('pause', handlePause);
       audio.removeEventListener('error', handleAudioError);
+      audio.removeEventListener('waiting', handleWaiting);
+      audio.removeEventListener('loadstart', handleLoadStart);
+      audio.removeEventListener('canplay', handleCanPlay);
+      audio.removeEventListener('playing', handlePlaying);
     };
   }, [user, currentPlayingSurah, currentAudioAdhkar, isAudioLoop]);
 
@@ -1254,6 +1291,7 @@ export default function App() {
     }
     activeAudioIdRef.current = null;
     setIsPlaying(false);
+    setIsAudioLoading(false);
     setCurrentPlayingSurah(null);
     setCurrentAudioAdhkar(null);
     setCurrentTime(0);
@@ -1417,12 +1455,18 @@ export default function App() {
     }
   };
 
-  const seekAudio = (e: React.MouseEvent<HTMLDivElement>) => {
+  const seekAudio = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
     if (!audioRef.current || duration === 0) return;
     const rect = e.currentTarget.getBoundingClientRect();
-    const clickX = e.clientX - rect.left;
-    const width = rect.width;
-    const newPercentage = clickX / width;
+    let clientX: number;
+    if ('touches' in e) {
+      const touch = e.changedTouches[0] || e.touches[0];
+      if (!touch) return;
+      clientX = touch.clientX;
+    } else {
+      clientX = e.clientX;
+    }
+    const newPercentage = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
     const newTime = newPercentage * duration;
     audioRef.current.currentTime = newTime;
     setCurrentTime(newTime);
@@ -2203,6 +2247,22 @@ ${dua.reference}
                 className="px-3 py-1.5 text-xs font-bold rounded-lg bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/20 hover:bg-[#D4AF37]/20 transition-all"
               >
                 تسجيل الدخول
+              </button>
+            )}
+            {canInstallPwa && (
+              <button
+                onClick={async () => {
+                  if (!deferredInstallPromptRef.current) return;
+                  deferredInstallPromptRef.current.prompt();
+                  const { outcome } = await deferredInstallPromptRef.current.userChoice;
+                  if (outcome === 'accepted') { setCanInstallPwa(false); triggerToast('تم تثبيت التطبيق على شاشتك بنجاح 📲✨'); }
+                  deferredInstallPromptRef.current = null;
+                }}
+                className="flex items-center gap-1.5 text-[10px] bg-[#D4AF37]/10 border border-[#D4AF37]/40 px-2.5 py-1.5 rounded-full text-[#D4AF37] font-bold hover:bg-[#D4AF37]/20 transition-all cursor-pointer animate-pulse"
+                title="تثبيت التطبيق على شاشتك"
+              >
+                <span>📲</span>
+                <span>تثبيت التطبيق</span>
               </button>
             )}
             <div className="flex items-center gap-1.5 text-[10px] bg-emerald-500/10 border border-emerald-500/25 px-2.5 py-1.5 rounded-full text-emerald-400 font-bold">
@@ -3394,7 +3454,26 @@ ${currentHadeeth.benefit}
                     </div>
 
                     {/* Book / Page Stage container */}
-                    <div className="flex-1 w-full max-w-lg mx-auto flex items-center justify-center py-2 relative">
+                    <div
+                      className="flex-1 w-full max-w-lg mx-auto flex items-center justify-center py-2 relative"
+                      style={{ touchAction: 'pan-y' }}
+                      onTouchStart={(e) => {
+                        quranTouchStartX.current = e.touches[0].clientX;
+                        quranTouchStartY.current = e.touches[0].clientY;
+                      }}
+                      onTouchEnd={(e) => {
+                        if (quranTouchStartX.current === null || quranTouchStartY.current === null) return;
+                        const dx = e.changedTouches[0].clientX - quranTouchStartX.current;
+                        const dy = e.changedTouches[0].clientY - quranTouchStartY.current;
+                        quranTouchStartX.current = null;
+                        quranTouchStartY.current = null;
+                        // Only horizontal swipes with enough distance (ignore vertical scrolls)
+                        if (Math.abs(dx) < 45 || Math.abs(dy) > Math.abs(dx) * 0.85) return;
+                        // In RTL Quran: swipe LEFT = next page, swipe RIGHT = prev page
+                        if (dx < 0 && quranPage < 604) updateQuranPageAndProgress(quranPage + 1, 'next');
+                        else if (dx > 0 && quranPage > 1) updateQuranPageAndProgress(quranPage - 1, 'prev');
+                      }}
+                    >
                       
                       {/* Interactive Slider overlays for mobile swipe helper lines */}
                       <div className="absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-black/20 to-transparent pointer-events-none rounded-l-2xl z-10"></div>
@@ -3748,8 +3827,9 @@ ${currentHadeeth.benefit}
                                   <span>{formatTime(duration)}</span>
                                 </div>
                                 <div 
-                                  className="h-1.5 bg-white/10 rounded-full w-full overflow-hidden cursor-pointer relative hover:h-2 transition-all" 
+                                  className="h-2.5 bg-white/10 rounded-full w-full overflow-hidden cursor-pointer relative hover:h-3 transition-all touch-none" 
                                   onClick={seekAudio}
+                                  onTouchEnd={seekAudio}
                                 >
                                   <div 
                                     className="h-full bg-gradient-to-r from-amber-500 to-[#D4AF37] rounded-full" 
@@ -3773,7 +3853,13 @@ ${currentHadeeth.benefit}
                                     onClick={togglePlay}
                                     className="p-2 rounded-full bg-[#D4AF37] text-[#02130F] hover:bg-amber-500 transition-all cursor-pointer active:scale-95 animate-pulse-slow"
                                   >
-                                    {isPlaying ? <Pause className="w-3.5 h-3.5 fill-[#02130F]" /> : <Play className="w-3.5 h-3.5 fill-[#02130F] ml-0.5" />}
+                                    {isAudioLoading ? (
+                                      <div className="w-3.5 h-3.5 border-2 border-[#02130F]/30 border-t-[#02130F] rounded-full animate-spin" />
+                                    ) : isPlaying ? (
+                                      <Pause className="w-3.5 h-3.5 fill-[#02130F]" />
+                                    ) : (
+                                      <Play className="w-3.5 h-3.5 fill-[#02130F] ml-0.5" />
+                                    )}
                                   </button>
                                   <button 
                                     onClick={() => skipTime(10)}
@@ -5893,7 +5979,13 @@ ${currentHadeeth.benefit}
                 className="p-3.5 rounded-full bg-gradient-to-r from-amber-400 to-[#D4AF37] hover:from-amber-300 hover:to-amber-500 text-[#02130F] transition-all transform active:scale-95 shadow-xl shadow-[#D4AF37]/10 cursor-pointer"
                 aria-label={isPlaying ? 'Pause' : 'Play'}
               >
-                {isPlaying ? <Pause className="w-4.5 h-4.5 fill-[#02130F] text-[#02130F]" /> : <Play className="w-4.5 h-4.5 fill-[#02130F] text-[#02130F] ml-0.5" />}
+                {isAudioLoading ? (
+                  <div className="w-4 h-4 border-2 border-[#02130F]/30 border-t-[#02130F] rounded-full animate-spin" />
+                ) : isPlaying ? (
+                  <Pause className="w-4.5 h-4.5 fill-[#02130F] text-[#02130F]" />
+                ) : (
+                  <Play className="w-4.5 h-4.5 fill-[#02130F] text-[#02130F] ml-0.5" />
+                )}
               </button>
 
               {/* Skip Forward 10s */}
@@ -5909,8 +6001,9 @@ ${currentHadeeth.benefit}
               <div className="flex-grow flex items-center gap-2.5">
                 <span className="text-[10px] text-gray-400 font-mono w-8 text-center">{formatTime(currentTime)}</span>
                 <div 
-                  className="h-1.5 bg-white/10 rounded-full flex-grow overflow-hidden cursor-pointer relative hover:h-2 transition-all" 
+                  className="h-2.5 bg-white/10 rounded-full flex-grow overflow-hidden cursor-pointer relative hover:h-3 transition-all touch-none" 
                   onClick={seekAudio}
+                  onTouchEnd={seekAudio}
                 >
                   <div 
                     className="h-full bg-gradient-to-r from-amber-500 via-[#D4AF37] to-amber-300 rounded-full shadow-[0_0_10px_rgba(212,175,55,0.5)]" 
