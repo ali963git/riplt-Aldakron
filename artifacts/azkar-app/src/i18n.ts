@@ -83,11 +83,21 @@ const resources = {
   },
 };
 
+const SUPPORTED_LANGS = ['ar', 'en'] as const;
+const storedLang = (() => {
+  try {
+    const v = localStorage.getItem('azkar-lang');
+    return SUPPORTED_LANGS.includes(v as any) ? v! : 'ar';
+  } catch {
+    return 'ar';
+  }
+})();
+
 i18n
-  .use(LanguageDetector)
   .use(initReactI18next)
   .init({
     resources,
+    lng: storedLang,
     fallbackLng: 'ar',
     interpolation: {
       escapeValue: false,

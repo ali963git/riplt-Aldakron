@@ -122,6 +122,15 @@
 *::-webkit-scrollbar-track { background: transparent; }
 *::-webkit-scrollbar-thumb { background-color: #D4AF3760; border-radius: 4px; }
 
+/* ── Tab content fade-in ── */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fade-in 0.15s ease-out both;
+}
+
 /* Tap highlight for mobile */
 a, button { -webkit-tap-highlight-color: transparent; }
 
