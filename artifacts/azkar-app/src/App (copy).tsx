@@ -2123,7 +2123,7 @@ ${dua.reference}
       {/* 1. TOAST COMPONENT */}
       <div 
         id="toast" 
-        className={`fixed top-14 sm:top-20 xl:top-28 right-4 left-4 md:left-auto md:right-8 z-50 max-w-sm bg-gradient-to-r from-[#03251B] to-[#0A4131] border border-[#D4AF37]/50 text-[#FAF6EE] px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 transition-all duration-300 ${
+        className={`fixed top-28 right-4 left-4 md:left-auto md:right-8 z-50 max-w-sm bg-gradient-to-r from-[#03251B] to-[#0A4131] border border-[#D4AF37]/50 text-[#FAF6EE] px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 transition-all duration-300 ${
           showToast ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'
         }`}
       >
@@ -2141,7 +2141,7 @@ ${dua.reference}
 
       {/* 3. APP HEADER */}
       <header className="sticky top-0 z-40 bg-[#02130F]/80 backdrop-blur-sm border-b border-[#D4AF37]/15">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 sm:h-20 xl:h-24 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-24 flex items-center justify-between">
           
           {/* Logo */}
           <motion.div
@@ -2155,7 +2155,7 @@ ${dua.reference}
           >
             {/* Logo icon with glow pulse */}
             <motion.div
-              className="az-glow w-9 h-9 sm:w-12 sm:h-12 xl:w-14 xl:h-14 rounded-full border border-[#D4AF37] overflow-hidden flex items-center justify-center bg-[#011B12] shrink-0"
+              className="az-glow w-14 h-14 rounded-full border-2 border-[#D4AF37] overflow-hidden flex items-center justify-center bg-[#011B12] shrink-0"
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.3, ease: [0.34, 1.56, 0.64, 1] }}
@@ -2174,7 +2174,7 @@ ${dua.reference}
             {/* Text block */}
             <div className="overflow-hidden">
               <motion.h1
-                className="az-title text-base sm:text-xl xl:text-2xl font-extrabold font-amiri leading-none tracking-wide"
+                className="az-title text-2xl font-extrabold font-amiri leading-none tracking-wide"
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
@@ -2274,8 +2274,8 @@ ${dua.reference}
             </div>
           </div>
 
-          {/* Tablet Menu Icon (sm–xl only; mobile uses bottom nav) */}
-          <div className="hidden sm:flex xl:hidden">
+          {/* Mobile Menu Icon */}
+          <div className="xl:hidden">
             <button 
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
               className="p-3 rounded-xl bg-[#042019] border border-[#D4AF37]/15 text-gray-300 hover:text-[#FAF6EE]"
@@ -2296,7 +2296,7 @@ ${dua.reference}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3, ease: 'easeOut' }}
-            className="xl:hidden fixed inset-x-0 top-14 sm:top-20 xl:top-24 z-30 bg-[#02130F]/98 backdrop-blur-xl border-b border-[#D4AF37]/20 p-4 sm:p-6 flex flex-col gap-1.5 sm:gap-2 shadow-2xl overflow-y-auto max-h-mobile-menu sm:max-h-[calc(100vh-5rem)] xl:max-h-[calc(100vh-6rem)]"
+            className="xl:hidden fixed inset-x-0 top-24 z-30 bg-[#02130F]/98 backdrop-blur-xl border-b border-[#D4AF37]/20 p-6 flex flex-col gap-2 shadow-2xl overflow-y-auto max-h-[calc(100vh-6rem)]"
           >
             {[
               { id: 'home', label: t('nav.home'), icon: Home },
@@ -2359,51 +2359,8 @@ ${dua.reference}
         )}
       </AnimatePresence>
 
-      {/* MOBILE BOTTOM NAVIGATION BAR */}
-      <nav className="xl:hidden fixed bottom-0 inset-x-0 z-[60] bg-[#02130F]/96 backdrop-blur-md border-t border-[#D4AF37]/20 flex items-stretch h-16 safe-bottom">
-        {([
-          { id: 'home',   label: i18n.language === 'ar' ? 'الرئيسية' : 'Home',   icon: Home },
-          { id: 'quran',  label: i18n.language === 'ar' ? 'القرآن'   : 'Quran',  icon: Book },
-          { id: 'azkar',  label: i18n.language === 'ar' ? 'أذكار'    : 'Azkar',  icon: Wind },
-          { id: 'tasbih', label: i18n.language === 'ar' ? 'المسبحة'  : 'Tasbih', icon: Hash },
-        ] as { id: string; label: string; icon: React.ElementType }[]).map((tab) => {
-          const Icon = tab.icon;
-          const isActive = activeTab === tab.id && !mobileMenuOpen;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => { setActiveTab(tab.id as any); setMobileMenuOpen(false); }}
-              className={`flex-1 flex flex-col items-center justify-center gap-0.5 relative transition-colors duration-150 ${
-                isActive ? 'text-[#D4AF37]' : 'text-gray-500 active:text-gray-300'
-              }`}
-            >
-              {isActive && (
-                <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-[#D4AF37] rounded-full" />
-              )}
-              <Icon className={`w-5 h-5 transition-transform duration-150 ${isActive ? 'scale-110' : ''}`} />
-              <span className="text-[9px] font-bold leading-none">{tab.label}</span>
-            </button>
-          );
-        })}
-        {/* More button */}
-        <button
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className={`flex-1 flex flex-col items-center justify-center gap-0.5 relative transition-colors duration-150 ${
-            mobileMenuOpen ? 'text-[#D4AF37]' : 'text-gray-500 active:text-gray-300'
-          }`}
-        >
-          {mobileMenuOpen && (
-            <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-[#D4AF37] rounded-full" />
-          )}
-          <Menu className="w-5 h-5" />
-          <span className="text-[9px] font-bold leading-none">
-            {i18n.language === 'ar' ? 'المزيد' : 'More'}
-          </span>
-        </button>
-      </nav>
-
       {/* 5. MAIN CONTAINER */}
-      <main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-nav-safe xl:py-8">
+      <main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
         {/* ==================== HOME TAB ==================== */}
         {activeTab === 'home' && (
@@ -5977,7 +5934,7 @@ ${currentHadeeth.benefit}
 
       {/* 6. STICKY BOTTOM AUDIO PLAYER */}
       {(currentPlayingSurah || currentAudioAdhkar) && (
-        <div className="sticky sticky-above-nav xl:bottom-0 z-40 bg-gradient-to-t from-[#010907] to-[#02130F]/98 border-t border-[#D4AF37]/30 px-4 py-4 md:py-5 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] backdrop-blur-md">
+        <div className="sticky bottom-0 z-40 bg-gradient-to-t from-[#010907] to-[#02130F]/98 border-t border-[#D4AF37]/30 px-4 py-4 md:py-5 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] backdrop-blur-md">
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 font-sans">
             
             {/* Audio details */}
