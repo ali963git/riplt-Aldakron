@@ -2171,17 +2171,6 @@ ${dua.reference}
               />
             </motion.div>
 
-            {/* Text block */}
-            <div className="overflow-hidden">
-              <motion.h1
-                className="az-title text-base sm:text-xl xl:text-2xl font-extrabold font-amiri leading-none tracking-wide"
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
-              >
-                الذَّاكِرُون
-              </motion.h1>
-            </div>
           </motion.div>
 
           {/* Desktop Navigation */}
