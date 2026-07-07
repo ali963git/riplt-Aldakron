@@ -18,35 +18,11 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "API Server"
+args = "artifacts/api-server: API Server"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "الذاكرون (Frontend)"
-
-[[workflows.workflow]]
-name = "API Server"
-author = "agent"
-
-[workflows.workflow.metadata]
-outputType = "console"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "PORT=8080 pnpm --filter @workspace/api-server run dev"
-waitForPort = 8080
-
-[[workflows.workflow]]
-name = "الذاكرون (Frontend)"
-author = "agent"
-
-[workflows.workflow.metadata]
-outputType = "webview"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "PORT=5173 BASE_PATH=/ pnpm --filter @workspace/azkar-app run dev"
-waitForPort = 5173
+args = "artifacts/azkar-app: web"
 
 [agent]
 stack = "PNPM_WORKSPACE"
