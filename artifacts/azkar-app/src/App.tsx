@@ -2147,24 +2147,27 @@ ${dua.reference}
           <motion.div
             className="flex items-center gap-3 cursor-pointer select-none"
             onClick={() => { setActiveTab('home'); setMobileMenuOpen(false); }}
-            initial={{ opacity: 0, x: 20 }}
+            initial={{ opacity: 0, x: 12 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
           >
             {/* Logo icon with glow pulse */}
             <motion.div
               className="az-glow w-14 h-14 rounded-full border-2 border-[#D4AF37] overflow-hidden flex items-center justify-center bg-[#011B12] shrink-0"
-              initial={{ scale: 0.5, opacity: 0, rotate: -15 }}
-              animate={{ scale: 1, opacity: 1, rotate: 0 }}
-              transition={{ duration: 0.8, ease: [0.34, 1.56, 0.64, 1], delay: 0.1 }}
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.3, ease: [0.34, 1.56, 0.64, 1] }}
             >
               <img
                 src="/images/logo.jpg"
                 alt="الذاكرون"
                 className="w-full h-full object-cover"
                 loading="eager"
+                width={56}
+                height={56}
+                fetchPriority="high"
               />
             </motion.div>
 
@@ -2172,9 +2175,9 @@ ${dua.reference}
             <div className="overflow-hidden">
               <motion.h1
                 className="az-title text-2xl font-extrabold font-amiri leading-none tracking-wide"
-                initial={{ opacity: 0, y: 16, filter: 'blur(8px)' }}
-                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.25 }}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
               >
                 الذَّاكِرُون
               </motion.h1>
@@ -2202,11 +2205,11 @@ ${dua.reference}
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`relative px-4 py-2.5 rounded-full text-xs font-bold transition-all duration-300 flex items-center gap-2 group cursor-pointer ${
+                  className={`relative px-4 py-2.5 rounded-full text-xs font-bold transition-all duration-150 flex items-center gap-2 group cursor-pointer ${
                     isActive ? 'text-[#02130F] bg-gradient-to-r from-[#D4AF37] to-[#FFF2B2] shadow-lg shadow-[#D4AF37]/20' : 'text-gray-400 hover:text-[#FAF6EE] hover:bg-white/5'
                   }`}
                 >
-                  <Icon className={`w-3.5 h-3.5 transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} />
+                  <Icon className={`w-3.5 h-3.5 transition-transform duration-150 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} />
                   <span className="relative z-10">{tab.label}</span>
                 </button>
               );
@@ -2218,13 +2221,13 @@ ${dua.reference}
             {/* Language Switcher */}
             <div className="flex items-center bg-[#011B12]/40 border border-[#D4AF37]/10 rounded-lg p-1">
               <button 
-                onClick={() => i18n.changeLanguage('ar')}
+                onClick={() => { i18n.changeLanguage('ar'); try { localStorage.setItem('azkar-lang', 'ar'); } catch {} }}
                 className={`px-2 py-1 text-[10px] font-black rounded-md transition-all ${i18n.language === 'ar' ? 'bg-[#D4AF37] text-[#02130F]' : 'text-gray-400 hover:text-[#FAF6EE]'}`}
               >
                 AR
               </button>
               <button 
-                onClick={() => i18n.changeLanguage('en')}
+                onClick={() => { i18n.changeLanguage('en'); try { localStorage.setItem('azkar-lang', 'en'); } catch {} }}
                 className={`px-2 py-1 text-[10px] font-black rounded-md transition-all ${i18n.language === 'en' ? 'bg-[#D4AF37] text-[#02130F]' : 'text-gray-400 hover:text-[#FAF6EE]'}`}
               >
                 EN
