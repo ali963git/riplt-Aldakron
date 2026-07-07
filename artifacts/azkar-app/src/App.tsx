@@ -2095,7 +2095,7 @@ ${dua.reference}
   }, [activeAzkarCategory, azkarDataState, favoriteAzkarIds]);
 
   return (
-    <div className="relative text-[#E6DFD3] font-cairo antialiased min-h-screen flex flex-col justify-between overflow-x-hidden">
+    <div className="relative text-[#E6DFD3] font-cairo antialiased min-h-screen flex flex-col overflow-x-hidden">
       
       {/* Dynamic Animated Background Layer */}
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
@@ -2140,7 +2140,7 @@ ${dua.reference}
       )}
 
       {/* 3. APP HEADER */}
-      <header className="sticky top-0 z-40 bg-transparent backdrop-blur-md border-b border-[#D4AF37]/15">
+      <header className="sticky top-0 z-40 bg-[#02130F]/80 backdrop-blur-sm border-b border-[#D4AF37]/15">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-24 flex items-center justify-between">
           
           {/* Logo */}
