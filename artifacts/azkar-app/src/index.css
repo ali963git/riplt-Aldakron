@@ -140,3 +140,16 @@ a, button { -webkit-tap-highlight-color: transparent; }
 .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
 .safe-left   { padding-left:   env(safe-area-inset-left); }
 .safe-right  { padding-right:  env(safe-area-inset-right); }
+
+/* Mobile bottom nav clearance — accounts for h-16 nav + iOS home indicator */
+.pb-nav-safe {
+  padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
+}
+/* Sticky element that should sit just above the bottom nav */
+.sticky-above-nav {
+  bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
+}
+/* Max-height for mobile dropdown = viewport minus header (3.5rem) minus bottom nav + safe area */
+.max-h-mobile-menu {
+  max-height: calc(100dvh - 3.5rem - 4rem - env(safe-area-inset-bottom, 0px));
+}
