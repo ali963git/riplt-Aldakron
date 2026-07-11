@@ -350,6 +350,11 @@ export default function App() {
   const [azkarMode, setAzkarMode] = useState<'text' | 'audio'>('text');
   const [currentAudioAdhkar, setCurrentAudioAdhkar] = useState<AudioZikrItem | null>(null);
   const [isAudioLoop, setIsAudioLoop] = useState<boolean>(false);
+  // SpeechSynthesis state for azkar audio mode
+  const synthItemsRef = useRef<ZikrItem[]>([]);
+  const synthIndexRef = useRef(0);
+  const isAudioLoopRef = useRef(false);
+  const [synthItemIndex, setSynthItemIndex] = useState(0);
 
   // Tasbih state
   const [activeDhikrPreset, setActiveDhikrPreset] = useState(PRESETS_DHIKR[0]);
@@ -1275,6 +1280,11 @@ export default function App() {
     }
   }, [playbackRate, currentPlayingSurah, currentAudioAdhkar]);
 
+  // Keep isAudioLoopRef in sync with state (used inside non-reactive callbacks)
+  useEffect(() => {
+    isAudioLoopRef.current = isAudioLoop;
+  }, [isAudioLoop]);
+
   const skipTime = (amount: number) => {
     if (!audioRef.current) return;
     let newTime = audioRef.current.currentTime + amount;
@@ -1284,7 +1294,61 @@ export default function App() {
     setCurrentTime(newTime);
   };
 
+  // ── Web Speech API — reads azkar text sequentially ──────────────────────
+  const speakAzkarSequence = () => {
+    const idx = synthIndexRef.current;
+    const items = synthItemsRef.current;
+    if (!items.length) return;
+
+    if (idx >= items.length) {
+      if (isAudioLoopRef.current) {
+        synthIndexRef.current = 0;
+        setSynthItemIndex(0);
+        speakAzkarSequence();
+      } else {
+        setIsPlaying(false);
+        setSynthItemIndex(0);
+        setCurrentAudioAdhkar(null);
+      }
+      return;
+    }
+
+    setSynthItemIndex(idx);
+
+    const utter = new SpeechSynthesisUtterance(items[idx].text);
+    utter.lang = 'ar-SA';
+    utter.rate = 0.8;
+    utter.pitch = 1.0;
+
+    const voices: SpeechSynthesisVoice[] = window.speechSynthesis?.getVoices?.() ?? [];
+    const arabicVoice = voices.find(v => v.lang === 'ar-SA') || voices.find(v => v.lang.startsWith('ar'));
+    if (arabicVoice) utter.voice = arabicVoice;
+
+    utter.onend = () => {
+      synthIndexRef.current = idx + 1;
+      speakAzkarSequence();
+    };
+    utter.onerror = () => { setIsPlaying(false); };
+
+    window.speechSynthesis?.cancel();
+    window.speechSynthesis?.speak(utter);
+    setIsPlaying(true);
+  };
+
+  const skipToNextAzkarItem = () => {
+    if (!currentAudioAdhkar || !synthItemsRef.current.length) return;
+    window.speechSynthesis?.cancel();
+    synthIndexRef.current = Math.min(synthIndexRef.current + 1, synthItemsRef.current.length - 1);
+    speakAzkarSequence();
+  };
+  // ─────────────────────────────────────────────────────────────────────────
+
   const stopAudio = () => {
+    window.speechSynthesis?.cancel();
+    synthItemsRef.current = [];
+    synthIndexRef.current = 0;
+    setSynthItemIndex(0);
+
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.src = "";
@@ -1299,7 +1363,23 @@ export default function App() {
   };
 
   const togglePlay = () => {
-    if (!audioRef.current || (!currentPlayingSurah && !currentAudioAdhkar)) return;
+    // Azkar Speech Synthesis mode
+    if (currentAudioAdhkar) {
+      if (isPlaying) {
+        window.speechSynthesis?.pause();
+        setIsPlaying(false);
+      } else {
+        if (window.speechSynthesis?.paused) {
+          window.speechSynthesis.resume();
+          setIsPlaying(true);
+        } else {
+          speakAzkarSequence();
+        }
+      }
+      return;
+    }
+    // Quran HTML Audio mode
+    if (!audioRef.current || !currentPlayingSurah) return;
     if (isPlaying) {
       audioRef.current.pause();
       setIsPlaying(false);
@@ -1318,31 +1398,42 @@ export default function App() {
   };
 
   const playAudioAdhkar = (adhkar: AudioZikrItem) => {
-    if (!audioRef.current) return;
-    
-    const audioId = `adhkar-${adhkar.id}`;
-    activeAudioIdRef.current = audioId;
+    // Toggle play/pause if tapping the same card
+    if (currentAudioAdhkar?.id === adhkar.id) {
+      togglePlay();
+      return;
+    }
 
-    audioRef.current.src = adhkar.audioUrl;
-    audioRef.current.load();
-    
+    // Stop any Quran HTML audio
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.src = "";
+    }
+    activeAudioIdRef.current = null;
+    setCurrentPlayingSurah(null);
+    setCurrentTime(0);
+    setDuration(0);
+
+    // Cancel any ongoing speech
+    window.speechSynthesis?.cancel();
+
+    // Find the azkar items for this category
+    const categoryData = azkarDataState.find(c => c.id === adhkar.category);
+    if (!categoryData?.items.length) {
+      triggerToast('لا توجد أذكار في هذه الفئة.');
+      return;
+    }
+
+    // Initialise speech sequence state
+    synthItemsRef.current = categoryData.items;
+    synthIndexRef.current = 0;
+    setSynthItemIndex(0);
     setCurrentAudioAdhkar(adhkar);
-    setCurrentPlayingSurah(null); // Stop surah if any
-    setIsPlaying(true);
-    
-    audioRef.current.play().then(() => {
-        if (activeAudioIdRef.current === audioId) {
-          setIsPlaying(true);
-          triggerToast(`جاري تشغيل ${adhkar.title} بصوت ${adhkar.reader} 🎧✨`);
-        }
-    }).catch(e => {
-        if (e.name === 'AbortError') {
-          console.log("Adhkar playback interrupted by a new request.");
-        } else {
-          console.warn("Audio play error:", e);
-          setIsPlaying(false);
-        }
-    });
+
+    triggerToast(`جاري تلاوة ${adhkar.title} 🎧✨`);
+
+    // Brief delay lets the browser load available voices first
+    setTimeout(() => speakAzkarSequence(), 120);
   };
 
   const playSurah = async (surah: Surah, startFromPosition?: number) => {
@@ -5212,31 +5303,29 @@ ${currentHadeeth.benefit}
                           </button>
 
                           <button 
-                            onClick={() => {
-                              if (audioRef.current) audioRef.current.currentTime += 10;
-                            }}
+                            onClick={skipToNextAzkarItem}
                             className="p-2.5 rounded-xl text-gray-400 hover:text-[#FAF6EE] transition-all border border-transparent hover:border-white/10"
+                            title="الذكر التالي"
                           >
                             <ChevronLeft className="w-5 h-5" />
                           </button>
                         </div>
 
-                        {/* Progress Bar (simplified) */}
-                        <div className="w-full space-y-1">
-                          <div className="w-full bg-white/5 h-1.5 rounded-full overflow-hidden cursor-pointer" onClick={(e) => {
-                             const rect = e.currentTarget.getBoundingClientRect();
-                             const x = e.clientX - rect.left;
-                             const clickedPercent = x / rect.width;
-                             if (audioRef.current) audioRef.current.currentTime = clickedPercent * duration;
-                          }}>
-                            <div 
-                              className="bg-[#D4AF37] h-full transition-all" 
-                              style={{ width: `${(currentTime / duration) * 100 || 0}%` }}
-                            ></div>
+                        {/* Item Progress Bar */}
+                        <div className="w-full space-y-2">
+                          <div className="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
+                            <div
+                              className="bg-[#D4AF37] h-full transition-all duration-500"
+                              style={{
+                                width: currentAudioAdhkar
+                                  ? `${((synthItemIndex + 1) / (currentAudioAdhkar.itemCount || 1)) * 100}%`
+                                  : '0%'
+                              }}
+                            />
                           </div>
-                          <div className="flex justify-between text-[9px] font-mono text-gray-500 font-bold">
-                            <span>{Math.floor(duration / 60)}:{(Math.floor(duration % 60)).toString().padStart(2, '0')}</span>
-                            <span>{Math.floor(currentTime / 60)}:{(Math.floor(currentTime % 60)).toString().padStart(2, '0')}</span>
+                          <div className="flex justify-between text-[9px] font-bold text-gray-500">
+                            <span>ذكر {synthItemIndex + 1} من {currentAudioAdhkar?.itemCount ?? 0}</span>
+                            {isPlaying && <span className="text-emerald-400 animate-pulse">● يُقرأ الآن</span>}
                           </div>
                         </div>
                       </div>
