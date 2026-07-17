@@ -1,19 +1,3 @@
 uploads = []
-
-[[generated]]
-id = "34VcISi5BFdZIPC-Fu8Pn"
-uri = "file://artifacts/azkar-app/public/images/mosque-bg.png"
-type = "image"
-title = "Cinematic Islamic mosque interior"
-
-[[generated]]
-id = "vVtoW9PuJPMyM7gDnJFxL"
-uri = "file://artifacts/azkar-app/public/images/islamic-pattern.png"
-type = "image"
-title = "Islamic geometric pattern texture"
-
-[[outputs]]
-id = "o9Xz9poh9rJtBXWlEwngP"
-uri = "file://artifacts/azkar-video/public/audio/bg_music.mp3"
-type = "audio"
-title = "Islamic ambient background music"
+generated = []
+outputs = []
