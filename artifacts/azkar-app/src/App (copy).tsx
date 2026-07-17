@@ -344,7 +344,10 @@ export default function App() {
   const [canInstallPwa, setCanInstallPwa] = useState<boolean>(false);
 
   // Azkar Tab State
-  const [activeAzkarCategory, setActiveAzkarCategory] = useState<'صباح' | 'مساء' | 'نوم' | 'صلاة' | 'favorites'>('صباح');
+  // Keep this in sync with every category provided by the content data. New
+  // categories (such as waking up and ruqyah) should be selectable without
+  // requiring a state-type change here.
+  const [activeAzkarCategory, setActiveAzkarCategory] = useState<AzkarCategory['id'] | 'favorites'>('صباح');
   const [azkarDataState, setAzkarDataState] = useState<AzkarCategory[]>([]);
   const [favoriteAzkarIds, setFavoriteAzkarIds] = useState<string[]>([]);
   const [azkarMode, setAzkarMode] = useState<'text' | 'audio'>('text');
