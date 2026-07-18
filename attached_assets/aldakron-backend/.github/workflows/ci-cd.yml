@@ -1,0 +1,88 @@
+name: CI/CD - Aldakron Backend
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: aldakron
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: aldakron_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U aldakron"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://aldakron:test_password@localhost:5432/aldakron_test?schema=public
+      JWT_ACCESS_SECRET: ci_test_secret_at_least_32_characters_long
+      JWT_REFRESH_SECRET: ci_test_secret_different_32_characters
+      CORS_ORIGINS: http://localhost:3000
+      NODE_ENV: test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Run migrations
+        run: npx prisma migrate deploy
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+      - name: Run tests
+        run: npm test
+
+  docker-build:
+    needs: lint-and-test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}/aldakron-backend:latest
+            ghcr.io/${{ github.repository }}/aldakron-backend:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

@@ -1,0 +1,37 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: aldakron-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: aldakron
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme_in_env}
+      POSTGRES_DB: aldakron
+    ports:
+      - '5432:5432'
+    volumes:
+      - aldakron_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U aldakron']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: aldakron-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://aldakron:${POSTGRES_PASSWORD:-changeme_in_env}@postgres:5432/aldakron?schema=public
+    ports:
+      - '4000:4000'
+
+volumes:
+  aldakron_pg_data:
