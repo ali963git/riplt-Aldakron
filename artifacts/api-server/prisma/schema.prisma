@@ -1,0 +1,253 @@
+// ============================================================================
+// الذَّاكِرُون | Aldakron - Database Schema
+// ============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ----------------------------------------------------------------------------
+// Enums
+// ----------------------------------------------------------------------------
+
+enum Role {
+  USER
+  EDITOR
+  ADMIN
+}
+
+enum CalculationMethod {
+  MWL // Muslim World League
+  ISNA // Islamic Society of North America
+  EGYPT
+  MAKKAH
+  KARACHI
+  TEHRAN
+  JAFARI
+}
+
+enum AzkarPeriod {
+  MORNING
+  EVENING
+  SLEEP
+  AFTER_PRAYER
+  GENERAL
+}
+
+enum NotificationType {
+  PRAYER
+  AZKAR
+  DAILY_WIRD
+  SYSTEM
+}
+
+// ----------------------------------------------------------------------------
+// User & Auth
+// ----------------------------------------------------------------------------
+
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  passwordHash  String
+  name          String
+  avatarUrl     String?
+  locale        String   @default("ar") // ar | en | tr
+  role          Role     @default(USER)
+  isActive      Boolean  @default(true)
+  isEmailVerified Boolean @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  refreshTokens    RefreshToken[]
+  quranBookmarks   QuranBookmark[]
+  quranFavorites   QuranFavoriteAyah[]
+  azkarProgress    AzkarProgress[]
+  prayerSettings   PrayerSettings?
+  deviceTokens     DeviceToken[]
+  notifications    Notification[]
+  auditLogs        AdminAuditLog[]
+
+  @@index([email])
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  tokenHash String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  revoked   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+// ----------------------------------------------------------------------------
+// Quran
+// ----------------------------------------------------------------------------
+// Surah/Ayah text itself is fetched live from a trusted external Quran API
+// (e.g. Al-Quran Cloud) rather than duplicated locally. We only persist
+// user-generated state: bookmarks, favorites, and reading position.
+
+model QuranBookmark {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  surahNumber Int
+  ayahNumber  Int
+  note        String?
+  createdAt   DateTime @default(now())
+
+  @@unique([userId, surahNumber, ayahNumber])
+  @@index([userId])
+  @@map("quran_bookmarks")
+}
+
+model QuranFavoriteAyah {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  surahNumber Int
+  ayahNumber  Int
+  createdAt   DateTime @default(now())
+
+  @@unique([userId, surahNumber, ayahNumber])
+  @@index([userId])
+  @@map("quran_favorite_ayahs")
+}
+
+model QuranLastRead {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  surahNumber Int
+  ayahNumber  Int
+  updatedAt   DateTime @updatedAt
+
+  @@map("quran_last_read")
+}
+
+// ----------------------------------------------------------------------------
+// Azkar (content is admin-managed and stored locally, unlike Quran)
+// ----------------------------------------------------------------------------
+
+model AzkarCategory {
+  id          String      @id @default(uuid())
+  period      AzkarPeriod
+  titleAr     String
+  titleEn     String
+  titleTr     String
+  order       Int         @default(0)
+  items       AzkarItem[]
+
+  @@map("azkar_categories")
+}
+
+model AzkarItem {
+  id           String        @id @default(uuid())
+  categoryId   String
+  category     AzkarCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  textAr       String
+  textEn       String?
+  textTr       String?
+  repeatCount  Int           @default(1)
+  source       String?
+  order        Int           @default(0)
+
+  progress AzkarProgress[]
+
+  @@index([categoryId])
+  @@map("azkar_items")
+}
+
+model AzkarProgress {
+  id         String    @id @default(uuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  azkarItemId String
+  azkarItem  AzkarItem @relation(fields: [azkarItemId], references: [id], onDelete: Cascade)
+  count      Int       @default(0)
+  completedAt DateTime?
+  date       DateTime  @default(now()) @db.Date
+
+  @@unique([userId, azkarItemId, date])
+  @@index([userId, date])
+  @@map("azkar_progress")
+}
+
+// ----------------------------------------------------------------------------
+// Prayer times & Qibla settings
+// ----------------------------------------------------------------------------
+
+model PrayerSettings {
+  id                String            @id @default(uuid())
+  userId            String            @unique
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  latitude          Float
+  longitude         Float
+  timezone          String
+  calculationMethod CalculationMethod @default(MWL)
+  notifyFajr        Boolean           @default(true)
+  notifyDhuhr       Boolean           @default(true)
+  notifyAsr         Boolean           @default(true)
+  notifyMaghrib     Boolean           @default(true)
+  notifyIsha        Boolean           @default(true)
+  reminderMinutesBefore Int           @default(10)
+  updatedAt         DateTime          @updatedAt
+
+  @@map("prayer_settings")
+}
+
+// ----------------------------------------------------------------------------
+// Notifications
+// ----------------------------------------------------------------------------
+
+model DeviceToken {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  platform  String // web | android | ios
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("device_tokens")
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      NotificationType
+  titleAr   String
+  bodyAr    String
+  read      Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  @@index([userId, read])
+  @@map("notifications")
+}
+
+// ----------------------------------------------------------------------------
+// Admin
+// ----------------------------------------------------------------------------
+
+model AdminAuditLog {
+  id        String   @id @default(uuid())
+  adminId   String
+  admin     User     @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  action    String
+  targetType String
+  targetId   String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  @@index([adminId])
+  @@map("admin_audit_logs")
+}

@@ -795,7 +795,7 @@ export default function App() {
   useEffect(() => {
     const fetchLiveReciters = async () => {
       try {
-        const response = await fetch('/api/quran/reciters');
+        const response = await fetch('/api/v1/quran/reciters');
         if (!response.ok) return;
         const data = await response.json();
         if (data && Array.isArray(data.reciters)) {
@@ -1458,7 +1458,7 @@ export default function App() {
     // Construct full URL using our secure CORS-free audio proxy
     const serverBase = selectedReciter.server.endsWith('/') ? selectedReciter.server : `${selectedReciter.server}/`;
     const directUrl = `${serverBase}${surah.file}.mp3`;
-    const audioUrl = `/api/quran/audio?url=${encodeURIComponent(directUrl)}`;
+    const audioUrl = `/api/v1/quran/audio?url=${encodeURIComponent(directUrl)}`;
     
     audioRef.current.src = audioUrl;
     audioRef.current.load();
@@ -1525,7 +1525,7 @@ export default function App() {
     if (currentPlayingSurah) {
       const serverBase = reciter.server.endsWith('/') ? reciter.server : `${reciter.server}/`;
       const directUrl = `${serverBase}${currentPlayingSurah.file}.mp3`;
-      const audioUrl = `/api/quran/audio?url=${encodeURIComponent(directUrl)}`;
+      const audioUrl = `/api/v1/quran/audio?url=${encodeURIComponent(directUrl)}`;
       if (audioRef.current) {
         const wasPlaying = isPlaying;
         audioRef.current.src = audioUrl;
@@ -2079,7 +2079,7 @@ ${dua.reference}
     setAiResponseText('');
     
     try {
-      const response = await fetch('/api/gemini/stream', {
+      const response = await fetch('/api/v1/gemini/stream', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
