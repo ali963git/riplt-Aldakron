@@ -39,7 +39,7 @@ A comprehensive Islamic platform ported from Firebase to this pnpm monorepo. Fea
 - Reciters list proxied from `mp3quran.net/api/v3/reciters` with 6h in-memory cache.
 - Gemini AI calls go through `/api/v1/gemini/stream` SSE route (uses `GEMINI_API_KEY` server-side).
 - Prisma migration applied: `artifacts/api-server/prisma/migrations/` contains the `init` migration.
-- bcrypt native binding must be built after fresh install: `cd node_modules/.pnpm/bcrypt@5.1.1/node_modules/bcrypt && npm run install`
+- Auth uses `bcryptjs` (pure JS) — no native build step required after `pnpm install`
 
 ## Product
 
