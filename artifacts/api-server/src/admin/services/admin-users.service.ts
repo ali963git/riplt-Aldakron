@@ -45,13 +45,7 @@ export class AdminUsersService {
       this.prisma.user.count({ where }),
     ]);
 
-    return {
-      items,
-      total,
-      page,
-      pageSize,
-      totalPages: Math.ceil(total / pageSize),
-    };
+    return { items, total, page, pageSize, totalPages: Math.ceil(total / pageSize) };
   }
 
   async getOne(id: string) {
@@ -73,15 +67,13 @@ export class AdminUsersService {
   }
 
   async update(adminId: string, targetUserId: string, dto: UpdateUserAdminDto) {
-    await this.getOne(targetUserId); // 404 if not found
-
+    await this.getOne(targetUserId);
     const updated = await this.prisma.user.update({
       where: { id: targetUserId },
       data: dto,
       select: { id: true, email: true, role: true, isActive: true },
     });
-
-    await this.auditLog.log(adminId, 'user.update', 'User', targetUserId, dto);
+    await this.auditLog.log(adminId, 'user.update', 'User', targetUserId, dto as unknown as Record<string, unknown>);
     return updated;
   }
 }

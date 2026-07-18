@@ -15,7 +15,7 @@ import { LoginDto } from './dto/login.dto';
 const BCRYPT_ROUNDS = 12;
 const REFRESH_TOKEN_TTL_DAYS = 30;
 
-interface TokenPair {
+export interface TokenPair {
   accessToken: string;
   refreshToken: string;
 }

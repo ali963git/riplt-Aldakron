@@ -4,35 +4,42 @@ A comprehensive Islamic platform ported from Firebase to this pnpm monorepo. Fea
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 8080)
-- `pnpm --filter @workspace/azkar-app run dev` — run the frontend (port 24812)
+- `pnpm --filter @workspace/api-server run dev` — run the NestJS API server (port 8080, watch mode)
+- `pnpm --filter @workspace/azkar-app run dev` — run the frontend (port 5173)
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
-- Required env: `GEMINI_API_KEY` — Google Gemini API key for the AI Reflection feature
+- Required env: `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET` — JWT signing keys (set as Replit Secrets)
+- Optional env: `GEMINI_API_KEY` — Google Gemini API key for the AI Reflection feature
+- `DATABASE_URL` — injected automatically by Replit's managed PostgreSQL (no manual setup needed)
 
 ## Stack
 
-- pnpm workspaces, Node.js 24, TypeScript 5.9
+- pnpm workspaces, Node.js 20, TypeScript 5.7
 - Frontend: React 18 + Vite + Tailwind CSS v4, framer-motion, recharts, i18next (Arabic/English)
-- API: Express 5 + @google/genai
-- DB: PostgreSQL + Drizzle ORM (not yet used by app features)
-- Build: esbuild (CJS bundle for API)
+- API: NestJS 10 + Passport JWT + Prisma ORM + @google/genai
+- DB: PostgreSQL + Prisma ORM (schema at `artifacts/api-server/prisma/schema.prisma`)
 
 ## Where things live
 
 - `artifacts/azkar-app/src/App.tsx` — entire frontend app (single large component ~6000 lines)
 - `artifacts/azkar-app/src/data/` — all Islamic data (azkar, duas, hisn, surahs, events, hadeeths)
-- `artifacts/azkar-app/src/AuthProvider.tsx` — stub auth context (no Firebase)
-- `artifacts/api-server/src/routes/gemini.ts` — Gemini stream SSE endpoint
-- `artifacts/api-server/src/routes/quran.ts` — Quran reciters proxy + audio CORS proxy
+- `artifacts/api-server/src/auth/` — JWT auth (register, login, refresh, logout)
+- `artifacts/api-server/src/quran/` — Quran module (reciters proxy, audio proxy, bookmarks, favorites)
+- `artifacts/api-server/src/azkar/` — Azkar module (categories, progress tracking)
+- `artifacts/api-server/src/prayer/` — Prayer times via Aladhan API
+- `artifacts/api-server/src/gemini/` — Gemini SSE streaming endpoint
+- `artifacts/api-server/src/admin/` — Admin panel (user mgmt, azkar CRUD, stats, notifications)
+- `artifacts/api-server/prisma/schema.prisma` — full DB schema
 
 ## Architecture decisions
 
-- Firebase completely removed; all sync replaced with localStorage. Auth is a stub.
-- Quran audio proxied through `/api/quran/audio?url=...` to avoid CORS issues with CDN servers.
-- Reciters list auto-updated at runtime from `mp3quran.net/api/v3/reciters`.
-- Gemini AI calls go through `/api/gemini/stream` SSE route (uses `GEMINI_API_KEY` server-side).
-- Push notifications replaced with no-op stubs (web push requires a separate backend infrastructure).
+- NestJS replaced the old Express server; all routes now under `/api/v1/...`.
+- Real JWT auth (register/login/refresh/logout) with bcrypt password hashing and rotating refresh tokens.
+- Quran audio proxied through `/api/v1/quran/audio?url=...` with SSRF-safe allowlist + redirect following.
+- Reciters list proxied from `mp3quran.net/api/v3/reciters` with 6h in-memory cache.
+- Gemini AI calls go through `/api/v1/gemini/stream` SSE route (uses `GEMINI_API_KEY` server-side).
+- Prisma migration applied: `artifacts/api-server/prisma/migrations/` contains the `init` migration.
+- bcrypt native binding must be built after fresh install: `cd node_modules/.pnpm/bcrypt@5.1.1/node_modules/bcrypt && npm run install`
 
 ## Product
 
