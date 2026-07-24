@@ -15,16 +15,20 @@ class EnvironmentVariables {
   @IsNumber()
   PORT = 8080;
 
+  // Optional in dev; runtime-managed in Replit when a database is attached.
+  @IsOptional()
   @IsString()
-  DATABASE_URL: string;
+  DATABASE_URL?: string;
 
+  @IsOptional()
   @IsString()
   @MinLength(32, { message: 'JWT_ACCESS_SECRET must be at least 32 characters long' })
-  JWT_ACCESS_SECRET: string;
+  JWT_ACCESS_SECRET?: string;
 
+  @IsOptional()
   @IsString()
   @MinLength(32, { message: 'JWT_REFRESH_SECRET must be at least 32 characters long' })
-  JWT_REFRESH_SECRET: string;
+  JWT_REFRESH_SECRET?: string;
 
   // Optional: comma-separated allow-list; in development all origins are allowed automatically.
   @IsOptional()

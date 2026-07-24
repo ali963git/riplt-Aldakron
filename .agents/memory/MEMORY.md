@@ -1,3 +1,5 @@
 - [Port config](port-config.md) — frontend on 5173, API on 8080; platform reserves 3000 so never use it for Vite
 - [Audio proxy SSRF pattern](audio-proxy-ssrf.md) — re-validate host allowlist on every redirect hop, not just the initial URL
 - [Quran swipe RTL](quran-swipe-rtl.md) — swipe-left (dx<0) = next page (higher number), swipe-right = prev page; matches existing keyboard mapping
+- [NestJS CommonJS import fix](nestjs-commonjs-imports.md) — use `import * as https from 'https'` not `import https from 'https'` in NestJS; the latter compiles to undefined `.default` in CommonJS without esModuleInterop
+- [API server startup deps](api-server-startup.md) — must run `prisma generate` + remove stray frontend files before `nest build`; JWT/DB env vars are now optional with graceful fallback

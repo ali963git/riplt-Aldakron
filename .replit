@@ -1,4 +1,4 @@
-modules = ["nodejs-20", "web", "bash", "postgresql-16"]
+modules = ["nodejs-20", "web", "bash", "postgresql-16", "python-base-3.13"]
 
 [deployment]
 router = "application"
@@ -66,3 +66,9 @@ externalPort = 3001
 
 [nix]
 channel = "stable-25_05"
+
+[userenv]
+
+[userenv.shared]
+JWT_ACCESS_SECRET = "6e8a2deff3285c887b04b44dd911a20bbd67c55ae7f8e9e2dea55cee03e1ebc9"
+JWT_REFRESH_SECRET = "5a3086ad4f913e5a38cce784741f87060af1a42248b301cd922b5c645f7a5ef1"

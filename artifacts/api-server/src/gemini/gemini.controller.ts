@@ -26,7 +26,11 @@ export class GeminiController {
       return;
     }
 
-    const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+    // Prefer user-supplied key from header; fall back to server env key
+    const headerKey = (req.headers['x-gemini-key'] as string | undefined)?.trim();
+    const apiKey = (headerKey && headerKey.length > 0 ? headerKey : null)
+      || process.env.GEMINI_API_KEY
+      || process.env.GOOGLE_API_KEY;
     if (!apiKey) {
       res.status(503).json({
         error: 'GEMINI_API_KEY غير متوفر. يرجى إضافة مفتاح API في إعدادات المشروع.',

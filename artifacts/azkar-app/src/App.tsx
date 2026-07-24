@@ -5268,10 +5268,14 @@ ${currentHadeeth.benefit}
                         </div>
                         <div className="text-right">
                           <h4 className="text-xl font-black text-[#FAF6EE] font-amiri">{currentAudioAdhkar.title}</h4>
-                          <p className="text-xs text-[#D4AF37] font-bold mt-1">بصوت: {currentAudioAdhkar.reader}</p>
+                          <p className="text-xs text-[#D4AF37] font-bold mt-1">
+                            {synthItemsRef.current.length > 0
+                              ? `يُقرأ الذكر ${synthItemIndex + 1} من ${synthItemsRef.current.length}`
+                              : `بصوت: ${currentAudioAdhkar.reader}`}
+                          </p>
                           <div className="flex items-center gap-3 mt-2">
                              <span className="text-[10px] bg-white/5 px-2 py-0.5 rounded-lg border border-white/5 text-gray-400">
-                               {currentAudioAdhkar.duration} دقيقة
+                               {currentAudioAdhkar.duration}
                              </span>
                              {isAudioLoop && (
                                <span className="text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-lg border border-emerald-500/20 flex items-center gap-1 font-bold">
